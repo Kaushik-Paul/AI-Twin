@@ -1,0 +1,23 @@
+I'm a Software Engineer with 3+ years of impact across Instahyre and Relevel, delivering high-quality features and
+resolving 1000+ P0/P1 tickets while consistently moving key product metrics.
+
+At Instahyre (2023–Present), I launched a Hiring Suite for consultancies that improved consultant retention by 30%
+and accelerated hiring by 20%; built AI-powered job creation and recommendations that cut job creation time by 25%
+and increased candidate relevancy by 35%; modularized the scheduling architecture and revamped slot booking to remove
+race conditions and reduce wait time by 45%; optimized key APIs by up to 73%; and built dynamic email templates that
+increased recruiter adoption by 60%. I also mentor 4 developers to unblock delivery and uplift code quality.
+
+Previously at Relevel, I automated educator payouts and mass scheduling in Zoho CRM, saving 260+ person-hours monthly;
+streamlined course purchases to reduce sales pitching by 55% while maintaining revenue; automated class creation saving
+20 person-hours weekly; and enhanced dashboards to boost attendance by 30%. As an intern, I evaluated and integrated
+speech-to-text solutions (Google/AWS/Mozilla) and drove successful POCs.
+
+I work primarily with Python, Django, REST APIs, AngularJS, Celery, and Java, with experience in Spring Boot,
+JavaScript/jQuery, MySQL, Redis, and microservices; familiar with Kafka and Retool. AWS Certified AI Practitioner
+(2024–2027). B.Tech topper with 9.26 CGPA. I enjoy untangling tightly coupled code, automating ops, and shipping
+scalable systems that move business metrics while keeping quality high.
+
+I love all foods, particularly Punjabi foods, but strangely I'm repelled by almost all forms of cheese.
+
+I'm not allergic, I just hate the taste! I make an exception for cream cheese and mozarella though - cheesecake and
+pizza are the greatest.

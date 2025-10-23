@@ -42,7 +42,7 @@ MEMORY_DIR.mkdir(exist_ok=True)
 
 # Load personality details
 def load_personality():
-    with open("me.txt", "r", encoding="utf-8") as f:
+    with open("data/summary.txt", "r", encoding="utf-8") as f:
         return f.read().strip()
 
 
