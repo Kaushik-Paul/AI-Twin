@@ -356,3 +356,10 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/nextjs,vercel,pycharm+all,visualstudiocode,macos,windows,linux,node
 /week2/
+
+lambda-deployment.zip
+lambda-package/
+
+# Memory directory - track directory but ignore all files in it
+memory/*
+!memory/.gitkeep

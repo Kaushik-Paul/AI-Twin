@@ -3,7 +3,7 @@ import json
 
 # Read Resume PDF
 try:
-    reader = PdfReader("./resources/resume.pdf")
+    reader = PdfReader("data/resume.pdf")
     resume = ""
     for page in reader.pages:
         text = page.extract_text()
@@ -14,7 +14,7 @@ except FileNotFoundError:
 
 # Read Linkedin PDF
 try:
-    reader = PdfReader("./resources/linkedin.pdf")
+    reader = PdfReader("data/linkedin.pdf")
     linkedin = ""
     for page in reader.pages:
         text = page.extract_text()
