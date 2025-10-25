@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 from typing import Optional, List, Dict
 import json
 import uuid
@@ -14,6 +15,10 @@ from context import prompt
 # Load environment variables
 load_dotenv(override=True)
 
+base_url="https://openrouter.ai/api/v1"
+model_name="google/gemini-2.5-flash-lite"
+api_key=os.getenv("OPENROUTER_API_KEY")
+
 app = FastAPI()
 
 # Configure CORS
@@ -24,6 +29,12 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+)
+
+# Initialize OpenAI client
+client = OpenAI(
+    base_url=base_url,
+    api_key=api_key,
 )
 
 # AWS region and Bedrock client
@@ -103,65 +114,6 @@ def save_conversation(session_id: str, messages: List[Dict]):
             json.dump(messages, f, indent=2)
 
 
-def call_bedrock(conversation: List[Dict], user_message: str) -> str:
-    """Call AWS Bedrock with conversation history"""
-
-    # Build messages in Bedrock format
-    messages = []
-
-    # Build system prompt using Converse API's system field
-    system = [{"text": prompt()}]
-
-    # Add conversation history (limit to last 10 exchanges to manage context)
-    for msg in conversation[-20:]:  # Last 10 back-and-forth exchanges
-        role = msg.get("role")
-        if role not in ("user", "assistant"):
-            continue
-        content_text = str(msg.get("content", ""))
-        messages.append({
-            "role": role,
-            "content": [{"text": content_text}]
-        })
-
-    # Add current user message
-    messages.append({
-        "role": "user",
-        "content": [{"text": user_message}]
-    })
-
-    try:
-        # Call Bedrock using the converse API
-        response = bedrock_client.converse(
-            modelId=BEDROCK_MODEL_ID,
-            messages=messages,
-            system=system,
-            inferenceConfig={
-                "maxTokens": 2000,
-                "temperature": 0.7,
-                "topP": 0.9
-            }
-        )
-
-        # Extract the response text
-        return response["output"]["message"]["content"][0]["text"]
-
-    except ParamValidationError as e:
-        print(f"Bedrock param validation error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-    except ClientError as e:
-        error = e.response.get("Error", {})
-        error_code = error.get("Code")
-        error_message = error.get("Message", str(e))
-        print(f"Bedrock {error_code} error: {error_message}")
-        if error_code == 'ValidationException':
-            # Surface the actual validation error from Bedrock
-            raise HTTPException(status_code=400, detail=error_message)
-        elif error_code == 'AccessDeniedException':
-            raise HTTPException(status_code=403, detail="Access denied to Bedrock model")
-        else:
-            raise HTTPException(status_code=500, detail=f"Bedrock error: {error_message}")
-
-
 @app.get("/")
 async def root():
     return {
@@ -190,8 +142,23 @@ async def chat(request: ChatRequest):
         # Load conversation history
         conversation = load_conversation(session_id)
 
-        # Call Bedrock for response
-        assistant_response = call_bedrock(conversation, request.message)
+        # Build messages for OpenAI
+        messages = [{"role": "system", "content": prompt()}]
+
+        # Add conversation history (keep last 10 messages for context window)
+        for msg in conversation[-10:]:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+
+        # Add current user message
+        messages.append({"role": "user", "content": request.message})
+
+        # Call OpenAI API
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=messages
+        )
+
+        assistant_response = response.choices[0].message.content
 
         # Update conversation history
         conversation.append(
@@ -210,8 +177,6 @@ async def chat(request: ChatRequest):
 
         return ChatResponse(response=assistant_response, session_id=session_id)
 
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
