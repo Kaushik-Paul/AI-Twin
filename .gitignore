@@ -354,6 +354,16 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+### Terraform ###
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.d/
+*.tfvars
+!terraform.tfvars
+!prod.tfvars
+
 # End of https://www.toptal.com/developers/gitignore/api/nextjs,vercel,pycharm+all,visualstudiocode,macos,windows,linux,node
 /week2/
 
