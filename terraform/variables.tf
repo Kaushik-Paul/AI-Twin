@@ -51,3 +51,9 @@ variable "root_domain" {
   type        = string
   default     = ""
 }
+
+variable "openrouter_api_key" {
+  description = "OpenRouter API key (passed to Lambda)"
+  type        = string
+  sensitive   = true
+}

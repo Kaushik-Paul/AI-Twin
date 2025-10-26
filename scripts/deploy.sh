@@ -6,8 +6,22 @@ PROJECT_NAME=${2:-twin}
 
 echo "🚀 Deploying ${PROJECT_NAME} to ${ENVIRONMENT}..."
 
-# 1. Build Lambda package
+# 0. Load environment variables from .env in project root
 cd "$(dirname "$0")/.."        # project root
+if [ -f .env ]; then
+  echo "Loading variables from .env"
+  # shellcheck disable=SC1091
+  set -a
+  source .env
+  set +a
+
+  # Expose OpenRouter API key to Terraform (TF_VAR_ prefix)
+  if [ -n "$OPENROUTER_API_KEY" ]; then
+    export TF_VAR_openrouter_api_key="$OPENROUTER_API_KEY"
+  fi
+fi
+
+# 1. Build Lambda package
 echo "📦 Building Lambda package..."
 (cd backend && uv run deploy.py)
 
