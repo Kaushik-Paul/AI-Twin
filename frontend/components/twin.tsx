@@ -16,6 +16,7 @@ export default function Twin() {
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,7 +47,7 @@ export default function Twin() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: input,
+                    message: userMessage.content,
                     session_id: sessionId || undefined,
                 }),
             });
@@ -69,7 +70,6 @@ export default function Twin() {
             setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
             console.error('Error:', error);
-            // Add error message
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
@@ -79,6 +79,10 @@ export default function Twin() {
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
+            // Refocus the input after message is sent
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
         }
     };
 
@@ -97,7 +101,7 @@ export default function Twin() {
                     <Bot className="w-6 h-6" />
                     AI Digital Twin
                 </h2>
-                <p className="text-sm text-slate-300 mt-1">Your AI course companion</p>
+                <p className="text-sm text-slate-300 mt-1">Kaushik Paul&#39;s Digital Twin</p>
             </div>
 
             {/* Messages */}
@@ -105,8 +109,8 @@ export default function Twin() {
                 {messages.length === 0 && (
                     <div className="text-center text-gray-500 mt-8">
                         <Bot className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                        <p>Hello! I&apos;m your Digital Twin.</p>
-                        <p className="text-sm mt-2">Ask me anything about AI deployment!</p>
+                        <p>Hello! I&apos;m Kaushik Paul&apos;s Digital Twin.</p>
+                        <p className="text-sm mt-2">Ask me anything about my career!</p>
                     </div>
                 )}
 
@@ -176,6 +180,7 @@ export default function Twin() {
             <div className="border-t border-gray-200 p-4 bg-white rounded-b-lg">
                 <div className="flex gap-2">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -183,6 +188,7 @@ export default function Twin() {
                         placeholder="Type your message..."
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-transparent text-gray-800"
                         disabled={isLoading}
+                        autoFocus
                     />
                     <button
                         onClick={sendMessage}

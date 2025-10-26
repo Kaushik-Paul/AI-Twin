@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Twin",
-  description: "Your personal AI assistant",
+  title: "Career Conversation",
+  description: "An AI Career Twin for Kaushik Paul",
   icons: {
     icon: [
       {
