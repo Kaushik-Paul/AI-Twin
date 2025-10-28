@@ -41,10 +41,12 @@ export default function Twin() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chat`, {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/${process.env.NEXT_PUBLIC_BASE_STAGE_NAME}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-api-key': `${process.env.NEXT_PUBLIC_CHAT_ENDPOINT_API_KEY}`
                 },
                 body: JSON.stringify({
                     message: userMessage.content,
