@@ -373,3 +373,6 @@ lambda-package/
 # Memory directory - track directory but ignore all files in it
 memory/*
 !memory/.gitkeep
+
+/terraform/terraform.tfvars
+terraform/terraform.tfvars
