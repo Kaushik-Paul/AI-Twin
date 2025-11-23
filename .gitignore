@@ -369,6 +369,7 @@ terraform.tfstate.d/
 
 lambda-deployment.zip
 lambda-package/
+lambda-deployment/
 
 # Memory directory - track directory but ignore all files in it
 memory/*

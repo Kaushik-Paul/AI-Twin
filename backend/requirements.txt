@@ -1,6 +1,6 @@
 fastapi==0.119.1
 uvicorn==0.38.0
-openai==2.6.0
+openai==2.8.0
 python-dotenv==1.1.1
 python-multipart==0.0.20
 boto3==1.40.57

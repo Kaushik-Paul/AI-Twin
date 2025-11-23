@@ -5,8 +5,8 @@ from groq import Groq
 import instructor
 from openai import OpenAI
 
-from context import EvaluationPrompt
-import constants
+from .context import EvaluationPrompt
+from . import constants
 
 load_dotenv(override=True)
 
