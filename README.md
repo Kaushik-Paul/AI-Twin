@@ -19,6 +19,9 @@ An AI-powered digital twin that represents Kaushik Paul in conversations. Users 
   - OpenRouter (default on `main`)
   - Amazon Bedrock (on `aws-bedrock` branch)
 - **Persistent memory** stored locally or in S3
+- **Tool-based follow-up capture**: when a visitor shares an email or clearly asks to stay in touch, the agent uses tools to trigger a Mailjet-backed notification so potential recruiters/clients can easily follow up.
+- **Unanswered-question logging**: whenever the agent cannot confidently answer a question from the provided context, it uses a tool to log that question so it can be reviewed and addressed later.
+- **Response judge & guardrails**: a separate evaluator model reviews the latest answer to detect prompt hijacking, hallucinations, off-topic or unprofessional replies, and can trigger a rerun with feedback to keep the twin on-brand and safe.
 - **Production-ready infra** with Terraform, API keys via API Gateway usage plans
 - **Clean UI** built with Next.js and Tailwind-style classes
 
