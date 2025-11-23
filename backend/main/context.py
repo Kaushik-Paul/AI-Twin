@@ -1,4 +1,4 @@
-from resources import resume, summary, facts, style, linkedin
+from .resources import resume, summary, facts, style, linkedin
 from datetime import datetime
 
 

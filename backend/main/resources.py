@@ -1,9 +1,14 @@
+import os
 from pypdf import PdfReader
 import json
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.normpath(os.path.join(base_dir, "..", "data"))
+
 # Read Resume PDF
 try:
-    reader = PdfReader("../data/resume.pdf")
+    resume_path = os.path.join(data_dir, "resume.pdf")
+    reader = PdfReader(resume_path)
     resume = ""
     for page in reader.pages:
         text = page.extract_text()
@@ -14,21 +19,22 @@ except FileNotFoundError:
 
 # Read Linkedin PDF
 try:
-    reader = PdfReader("../data/linkedin.pdf")
+    linkedin_path = os.path.join(data_dir, "linkedin.pdf")
+    reader = PdfReader(linkedin_path)
     linkedin = ""
     for page in reader.pages:
         text = page.extract_text()
         if text:
             linkedin += text
 except FileNotFoundError:
-    resume = "linkedin profile not available"
+    linkedin = "linkedin profile not available"
 
 # Read other data files
-with open("../data/summary.txt", "r", encoding="utf-8") as f:
+with open(os.path.join(data_dir, "summary.txt"), "r", encoding="utf-8") as f:
     summary = f.read()
 
-with open("../data/style.txt", "r", encoding="utf-8") as f:
+with open(os.path.join(data_dir, "style.txt"), "r", encoding="utf-8") as f:
     style = f.read()
 
-with open("../data/facts.json", "r", encoding="utf-8") as f:
+with open(os.path.join(data_dir, "facts.json"), "r", encoding="utf-8") as f:
     facts = json.load(f)

@@ -9,10 +9,10 @@ import uuid
 from datetime import datetime
 from agents import Runner
 
-from chat_agents import chat_agent
-from context import ChatPrompt
-from conversation import load_conversation, save_conversation
-from evaluation import ChatEvaluation
+from .chat_agents import chat_agent
+from .context import ChatPrompt
+from .conversation import load_conversation, save_conversation
+from .evaluation import ChatEvaluation
 
 # Load environment variables
 load_dotenv(override=True)
