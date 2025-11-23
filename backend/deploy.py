@@ -116,6 +116,21 @@ def main():
         except Exception:
             pass
 
+        print("Deleting temporary S3 bucket...")
+        try:
+            s3.delete_bucket(Bucket=bucket_name)
+        except Exception:
+            pass
+
+        print("Removing local temporary files...")
+        try:
+            if os.path.exists("lambda-deployment.zip"):
+                os.remove("lambda-deployment.zip")
+            if os.path.exists("lambda-package"):
+                shutil.rmtree("lambda-package")
+        except Exception:
+            pass
+
 
 if __name__ == "__main__":
     main()
