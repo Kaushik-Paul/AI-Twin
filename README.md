@@ -1,10 +1,10 @@
 # AI Digital Twin
 
-[![Live Website](https://img.shields.io/badge/Live_Website-6c63ff?logo=rocket&logoColor=white&labelColor=5a52d3)](https://ai-chat.kaushikpaul.pp.ua/)
+[![Live Website](https://img.shields.io/badge/Live_Website-6c63ff?logo=rocket&logoColor=white&labelColor=5a52d3)](http://projects.kaushikpaul.co.in/ai-chat)
 
 An AI-powered digital twin that represents Kaushik Paul in conversations. Users can chat with the twin to learn about career background, skills, and experience via a clean Next.js frontend and a FastAPI backend.
 
-- **Live Demo**: https://ai-chat.kaushikpaul.pp.ua/
+- **Live Demo**: http://projects.kaushikpaul.co.in/ai-chat
 - **Backend**: FastAPI on AWS Lambda (via API Gateway + Terraform)
 - **Frontend**: Next.js static export on S3 + CloudFront
 - **AI Providers**:
