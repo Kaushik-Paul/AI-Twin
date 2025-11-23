@@ -55,5 +55,37 @@ variable "root_domain" {
 variable "openrouter_api_key" {
   description = "OpenRouter API key (passed to Lambda)"
   type        = string
-  sensitive   = true
 }
+
+variable "default_model_name" {
+  description = "Default openrouter model name"
+  type = string
+  default = "google/gemini-2.5-flash-lite"
+}
+
+variable "evaluation_model_name" {
+  description = "Model that will be used for evaluation of responses (from Groq)"
+  type = string
+  default = "groq/llama-3.3-70b-versatile"
+}
+
+variable "mailjet_api_key" {
+  description = "Mailjet API key"
+  type = string
+}
+
+variable "mailjet_api_secret" {
+  description = "Mailjet API secret"
+  type = string
+}
+
+variable "mailjet_from_email" {
+  description = "Mailjet from email address that will be send"
+  type = string
+}
+
+variable "mailjet_to_email" {
+  description = "Mailjet to email address that will be send"
+  type = string
+}
+

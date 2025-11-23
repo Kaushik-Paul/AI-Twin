@@ -138,6 +138,12 @@ resource "aws_lambda_function" "api" {
       USE_S3           = "true"
       BEDROCK_MODEL_ID = var.bedrock_model_id
       OPENROUTER_API_KEY = var.openrouter_api_key
+      DEFAULT_MODEL_NAME = var.default_model_name
+      EVALUATION_MODEL_NAME = var.evaluation_model_name
+      MAILJET_API_KEY = var.mailjet_api_key
+      MAILJET_API_SECRET = var.mailjet_api_secret
+      MAILJET_FROM_EMAIL = var.mailjet_from_email
+      MAILJET_TO_EMAIL = var.mailjet_to_email
     }
   }
 
