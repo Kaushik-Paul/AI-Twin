@@ -4,7 +4,7 @@ import boto3
 from botocore.exceptions import ClientError
 from typing import List, Dict
 
-MEMORY_DIR = os.getenv("MEMORY_DIR", "../memory")
+MEMORY_DIR = os.getenv("MEMORY_DIR", "../../memory")
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 S3_BUCKET = os.getenv("S3_BUCKET", "")
 
