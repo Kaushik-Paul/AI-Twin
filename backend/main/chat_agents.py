@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv
 from agents import Agent, function_tool
 
 from typing import Optional
 from context import ChatPrompt
 from email_sender import MailJetEmail
+
+load_dotenv(override=True)
 
 model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
 litellm_model_name = "litellm/openrouter/" + model_name

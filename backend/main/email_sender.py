@@ -1,6 +1,4 @@
-import asyncio
 import os
-
 from dotenv import load_dotenv
 from mailjet_rest import Client
 
@@ -12,8 +10,6 @@ class MailJetEmail:
 
     def send_email(self, message: str):
         """ Send out an email with the given body to all sales prospects """
-
-        print("Sending Email: ", message)
 
         api_key = os.getenv("MAILJET_API_KEY")
         api_secret = os.getenv("MAILJET_API_SECRET")

@@ -93,7 +93,7 @@ async def chat(request: ChatRequest):
         elif not isinstance(assistant_response, str):
             assistant_response = str(assistant_response)
 
-        evaluation = evaluate_response.evaluate(request.message, assistant_response, conversation)
+        evaluation = evaluate_response.evaluate(assistant_response, request.message, conversation)
 
 
         print("Evaluation feedback: ", evaluation.is_acceptable)
