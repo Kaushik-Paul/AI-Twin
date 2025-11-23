@@ -4,6 +4,9 @@
 
 An AI-powered digital twin that represents Kaushik Paul in conversations. Users can chat with the twin to learn about career background, skills, and experience via a clean Next.js frontend and a FastAPI backend.
 
+> **Upgrade Note**  
+> This project is an upgraded, production-ready evolution of my earlier **Career Conversation** assistant: [Career-Conversation](https://github.com/Kaushik-Paul/Career-Conversation).
+
 - **Live Demo**: http://projects.kaushikpaul.co.in/ai-chat
 - **Backend**: FastAPI on AWS Lambda (via API Gateway + Terraform)
 - **Frontend**: Next.js static export on S3 + CloudFront
