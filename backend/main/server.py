@@ -95,12 +95,8 @@ async def chat(request: ChatRequest):
 
         evaluation = evaluate_response.evaluate(assistant_response, request.message, conversation)
 
-
-        print("Evaluation feedback: ", evaluation.is_acceptable)
         if not evaluation.is_acceptable:
             assistant_response = evaluate_response.rerun(ChatPrompt.prompt(), assistant_response, request.message, conversation, evaluation.feedback)
-
-            print("Assistant response: ", assistant_response)
 
         conversation.append(
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
@@ -119,7 +115,6 @@ async def chat(request: ChatRequest):
         return ChatResponse(response=assistant_response, session_id=session_id)
 
     except Exception as e:
-        print(f"Error in chat endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
