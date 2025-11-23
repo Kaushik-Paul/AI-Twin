@@ -3,23 +3,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
-from typing import Optional, List, Dict
+from typing import Optional
 import json
 import uuid
 from datetime import datetime
-import boto3
-from botocore.exceptions import ClientError, ParamValidationError
-from context import prompt
+from agents import Runner
+
+from chat_agents import chat_agent
+from context import ChatPrompt
+from conversation import load_conversation, save_conversation
+from evaluation import ChatEvaluation
 
 # Load environment variables
 load_dotenv(override=True)
 
-base_url="https://openrouter.ai/api/v1"
-model_name="google/gemini-2.5-flash-lite"
-api_key=os.getenv("OPENROUTER_API_KEY")
-
+model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
 app = FastAPI()
+USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 
 # Configure CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -31,31 +31,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client
-client = OpenAI(
-    base_url=base_url,
-    api_key=api_key,
-)
-
-# AWS region and Bedrock client
-AWS_REGION = os.getenv("DEFAULT_AWS_REGION", "us-east-1")
-bedrock_client = boto3.client(
-    service_name="bedrock-runtime",
-    region_name=AWS_REGION
-)
-
-BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID")
-
-# Memory storage configuration
-USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
-S3_BUCKET = os.getenv("S3_BUCKET", "")
-MEMORY_DIR = os.getenv("MEMORY_DIR", "../memory")
-
-# Initialize S3 client if needed
-if USE_S3:
-    s3_client = boto3.client("s3")
-
-
 # Request/Response models
 class ChatRequest(BaseModel):
     message: str
@@ -66,61 +41,13 @@ class ChatResponse(BaseModel):
     response: str
     session_id: str
 
-
-class Message(BaseModel):
-    role: str
-    content: str
-    timestamp: str
-
-
-# Memory management functions
-def get_memory_path(session_id: str) -> str:
-    return f"{session_id}.json"
-
-
-def load_conversation(session_id: str) -> List[Dict]:
-    """Load conversation history from storage"""
-    if USE_S3:
-        try:
-            response = s3_client.get_object(Bucket=S3_BUCKET, Key=get_memory_path(session_id))
-            return json.loads(response["Body"].read().decode("utf-8"))
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchKey":
-                return []
-            raise
-    else:
-        # Local file storage
-        file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                return json.load(f)
-        return []
-
-
-def save_conversation(session_id: str, messages: List[Dict]):
-    """Save conversation history to storage"""
-    if USE_S3:
-        s3_client.put_object(
-            Bucket=S3_BUCKET,
-            Key=get_memory_path(session_id),
-            Body=json.dumps(messages, indent=2),
-            ContentType="application/json",
-        )
-    else:
-        # Local file storage
-        os.makedirs(MEMORY_DIR, exist_ok=True)
-        file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))
-        with open(file_path, "w") as f:
-            json.dump(messages, f, indent=2)
-
-
 @app.get("/")
 async def root():
     return {
-        "message": "AI Digital Twin API (Powered by AWS Bedrock)",
+        "message": "AI Digital Twin API",
         "memory_enabled": True,
         "storage": "S3" if USE_S3 else "local",
-        "ai_model": BEDROCK_MODEL_ID
+        "ai_model": model_name,
     }
 
 
@@ -129,7 +56,7 @@ async def health_check():
     return {
         "status": "healthy",
         "use_s3": USE_S3,
-        "bedrock_model": BEDROCK_MODEL_ID
+        "model": model_name,
     }
 
 
@@ -142,25 +69,39 @@ async def chat(request: ChatRequest):
         # Load conversation history
         conversation = load_conversation(session_id)
 
-        # Build messages for OpenAI
-        messages = [{"role": "system", "content": prompt()}]
+        evaluate_response = ChatEvaluation()
 
-        # Add conversation history (keep last 10 messages for context window)
-        for msg in conversation[-10:]:
-            messages.append({"role": msg["role"], "content": msg["content"]})
+        history_text = json.dumps(conversation, ensure_ascii=False)
+        input_parts = [
+            "Here is the prior conversation as a JSON array of messages:",
+            history_text,
+            "Each message has 'role' and 'content' fields.",
+            "Here is the user's latest message:",
+            request.message,
+            "Respond to the user's latest message as the digital twin, using your tools when appropriate.",
+        ]
+        agent_input = "\n\n".join(input_parts)
 
-        # Add current user message
-        messages.append({"role": "user", "content": request.message})
-
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=messages
+        agent_result = await Runner.run(
+            chat_agent,
+            input=agent_input,
         )
 
-        assistant_response = response.choices[0].message.content
+        assistant_response = agent_result.final_output
+        if isinstance(assistant_response, dict):
+            assistant_response = json.dumps(assistant_response, ensure_ascii=False)
+        elif not isinstance(assistant_response, str):
+            assistant_response = str(assistant_response)
 
-        # Update conversation history
+        evaluation = evaluate_response.evaluate(request.message, assistant_response, conversation)
+
+
+        print("Evaluation feedback: ", evaluation.is_acceptable)
+        if not evaluation.is_acceptable:
+            assistant_response = evaluate_response.rerun(ChatPrompt.prompt(), assistant_response, request.message, conversation, evaluation.feedback)
+
+            print("Assistant response: ", assistant_response)
+
         conversation.append(
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
         )
