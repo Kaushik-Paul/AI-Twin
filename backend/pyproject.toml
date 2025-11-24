@@ -13,7 +13,5 @@ dependencies = [
     "uvicorn==0.38.0",
     "mailjet-rest==1.5.1",
     "openai-agents==0.6.1",
-    "litellm==1.80.5",
-    "groq==0.36.0",
-    "instructor==1.13.0"
+    "litellm==1.80.5"
 ]

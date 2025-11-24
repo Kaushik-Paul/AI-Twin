@@ -66,7 +66,7 @@ variable "default_model_name" {
 variable "evaluation_model_name" {
   description = "Model that will be used for evaluation of responses (from Groq)"
   type = string
-  default = "groq/llama-3.3-70b-versatile"
+  default = "google/gemini-2.5-flash-lite"
 }
 
 variable "mailjet_api_key" {
