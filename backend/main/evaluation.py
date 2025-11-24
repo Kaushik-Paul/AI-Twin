@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from groq import Groq
-import instructor
 from openai import OpenAI
 
 from .context import EvaluationPrompt
@@ -13,20 +11,15 @@ load_dotenv(override=True)
 groq_api_key = os.getenv('GROQ_API_KEY')
 openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
 model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
-evaluator_model_name = os.getenv("EVALUATION_MODEL_NAME", "groq/llama-3.3-70b-versatile")
+evaluator_model_name = os.getenv("EVALUATION_MODEL_NAME", "google/gemini-2.5-flash-lite")
 
 class Evaluation(BaseModel):
     is_acceptable: bool
     feedback: str
 
-groq_client = Groq(
-    api_key=groq_api_key
-)
-
 class ChatEvaluation:
     def __init__(self):
         self.evaluator_system_prompt = EvaluationPrompt().fetch_evaluator_system_prompt()
-        self.groq_client = instructor.from_provider(evaluator_model_name)
         self.client = OpenAI(api_key=openrouter_api_key, base_url=constants.OPENROUTER_BASE_URL)
 
     def evaluate(self, reply, message, history) -> Evaluation:
@@ -39,8 +32,8 @@ class ChatEvaluation:
         """
 
         messages = [{"role": "system", "content": self.evaluator_system_prompt}] + [{"role": "user", "content": EvaluationPrompt.evaluator_user_prompt(reply, message, history)}]
-        response = self.groq_client.chat.completions.create(messages=messages, response_model=Evaluation)
-        return response
+        response = self.client.responses.parse(model=evaluator_model_name, input=messages, text_format=Evaluation)
+        return response.output_parsed
 
     def rerun(self, system_prompt, reply, message, history, feedback):
         """
