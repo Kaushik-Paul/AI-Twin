@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 set_tracing_disabled(True)
 
-model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
+model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
 litellm_model_name = "openrouter/" + model_name
 
 send_email_client = MailJetEmail()
