@@ -17,7 +17,7 @@ from .evaluation import ChatEvaluation
 # Load environment variables
 load_dotenv(override=True)
 
-model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
+model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
 app = FastAPI()
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 

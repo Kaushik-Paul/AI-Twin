@@ -10,7 +10,7 @@ load_dotenv(override=True)
 
 groq_api_key = os.getenv('GROQ_API_KEY')
 openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
-model_name = os.getenv("MODEL_NAME", "google/gemini-2.5-flash-lite")
+model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
 evaluator_model_name = os.getenv("EVALUATION_MODEL_NAME", "google/gemini-2.5-flash-lite")
 
 class Evaluation(BaseModel):
