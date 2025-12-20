@@ -1,10 +1,14 @@
 import os
+import logging
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from openai import OpenAI
 
 from .context import EvaluationPrompt
 from . import constants
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 load_dotenv(override=True)
 
@@ -32,8 +36,12 @@ class ChatEvaluation:
         """
 
         messages = [{"role": "system", "content": self.evaluator_system_prompt}] + [{"role": "user", "content": EvaluationPrompt.evaluator_user_prompt(reply, message, history)}]
-        response = self.client.responses.parse(model=evaluator_model_name, input=messages, text_format=Evaluation)
-        return response.output_parsed
+        try:
+            response = self.client.responses.parse(model=evaluator_model_name, input=messages, text_format=Evaluation)
+            return response.output_parsed
+        except Exception as e:
+            logger.error("Evaluation API call failed: %s", str(e))
+            raise
 
     def rerun(self, system_prompt, reply, message, history, feedback):
         """
@@ -50,5 +58,9 @@ class ChatEvaluation:
         updated_system_prompt += f"## Your attempted answer:\n{reply}\n\n"
         updated_system_prompt += f"## Reason for rejection:\n{feedback}\n\n"
         messages = [{"role": "system", "content": updated_system_prompt}] + history + [{"role": "user", "content": message}]
-        response = self.client.chat.completions.create(model=model_name, messages=messages)
-        return response.choices[0].message.content
+        try:
+            response = self.client.chat.completions.create(model=model_name, messages=messages)
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error("Rerun API call failed: %s", str(e))
+            raise

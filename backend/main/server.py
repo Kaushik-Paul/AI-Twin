@@ -2,12 +2,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
+import logging
 from dotenv import load_dotenv
 from typing import Optional
 import json
 import uuid
 from datetime import datetime
 from agents import Runner
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 from .chat_agents import chat_agent
 from .context import ChatPrompt
@@ -82,10 +86,14 @@ async def chat(request: ChatRequest):
         ]
         agent_input = "\n\n".join(input_parts)
 
-        agent_result = await Runner.run(
-            chat_agent,
-            input=agent_input,
-        )
+        try:
+            agent_result = await Runner.run(
+                chat_agent,
+                input=agent_input,
+            )
+        except Exception as e:
+            logger.error("Agent runner failed for session_id=%s: %s", session_id, str(e))
+            raise HTTPException(status_code=500, detail="Something went wrong while processing your request")
 
         assistant_response = agent_result.final_output
         if isinstance(assistant_response, dict):
@@ -93,10 +101,19 @@ async def chat(request: ChatRequest):
         elif not isinstance(assistant_response, str):
             assistant_response = str(assistant_response)
 
-        evaluation = evaluate_response.evaluate(assistant_response, request.message, conversation)
+        try:
+            evaluation = evaluate_response.evaluate(assistant_response, request.message, conversation)
+        except Exception as e:
+            logger.error("Evaluation failed for session_id=%s: %s", session_id, str(e))
+            raise HTTPException(status_code=500, detail="Something went wrong while processing your request")
 
         if not evaluation.is_acceptable:
-            assistant_response = evaluate_response.rerun(ChatPrompt.prompt(), assistant_response, request.message, conversation, evaluation.feedback)
+            logger.info("Evaluation rejected for session_id=%s, feedback=%s", session_id, evaluation.feedback)
+            try:
+                assistant_response = evaluate_response.rerun(ChatPrompt.prompt(), assistant_response, request.message, conversation, evaluation.feedback)
+            except Exception as e:
+                logger.error("Evaluation rerun failed for session_id=%s: %s", session_id, str(e))
+                raise HTTPException(status_code=500, detail="Something went wrong while processing your request")
 
         conversation.append(
             {"role": "user", "content": request.message, "timestamp": datetime.now().isoformat()}
@@ -114,8 +131,11 @@ async def chat(request: ChatRequest):
 
         return ChatResponse(response=assistant_response, session_id=session_id)
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Unexpected error in chat endpoint: %s", str(e))
+        raise HTTPException(status_code=500, detail="Something went wrong while processing your request")
 
 
 @app.get("/conversation/{session_id}")
