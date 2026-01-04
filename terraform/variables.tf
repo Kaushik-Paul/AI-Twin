@@ -69,6 +69,18 @@ variable "evaluation_model_name" {
   default = "google/gemini-2.5-flash-lite"
 }
 
+variable "evaluation_provider_order_enabled" {
+  description = "Enable OpenRouter provider ordering for the evaluator"
+  type        = bool
+  default     = false
+}
+
+variable "evaluation_provider_order" {
+  description = "Comma-separated provider slugs in priority order for the evaluator"
+  type        = string
+  default     = ""
+}
+
 variable "mailjet_api_key" {
   description = "Mailjet API key"
   type = string
