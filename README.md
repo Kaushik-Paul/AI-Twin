@@ -107,7 +107,7 @@ export OPENROUTER_API_KEY=sk-or-...
 export CORS_ORIGINS=http://localhost:3000
 
 # run locally
-uvicorn backend.server:app --reload --port 8000
+uvicorn main.server:app --reload --port 8000
 ```
 
 ### 3) Frontend (Next.js)
