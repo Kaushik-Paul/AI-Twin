@@ -137,6 +137,10 @@ Open http://localhost:3000 and start chatting.
 
 ### Root `.env` (read by backend and scripts)
 - `OPENROUTER_API_KEY` — required on `main` branch for OpenRouter
+- `DEFAULT_MODEL_NAME` — default chat model slug (e.g., `google/gemini-2.5-flash-lite`)
+- `EVALUATION_MODEL_NAME` — evaluator model slug (defaults to `DEFAULT_MODEL_NAME` when unset)
+- `EVALUATION_PROVIDER_ORDER_ENABLED` — `true|false` toggle (defaults to `false`) to apply the provider order; fallbacks stay enabled
+- `EVALUATION_PROVIDER_ORDER` — comma-separated provider slugs in priority order for the evaluator
 - `CORS_ORIGINS` — comma-separated origins for CORS (e.g., `http://localhost:3000`)
 - `DEFAULT_AWS_REGION` — e.g., `ap-south-1`
 - `PROJECT_NAME` — used in infra naming
