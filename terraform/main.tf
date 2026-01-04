@@ -140,6 +140,8 @@ resource "aws_lambda_function" "api" {
       OPENROUTER_API_KEY = var.openrouter_api_key
       DEFAULT_MODEL_NAME = var.default_model_name
       EVALUATION_MODEL_NAME = var.evaluation_model_name
+      EVALUATION_PROVIDER_ORDER_ENABLED = var.evaluation_provider_order_enabled ? "true" : "false"
+      EVALUATION_PROVIDER_ORDER = var.evaluation_provider_order
       MAILJET_API_KEY = var.mailjet_api_key
       MAILJET_API_SECRET = var.mailjet_api_secret
       MAILJET_FROM_EMAIL = var.mailjet_from_email
