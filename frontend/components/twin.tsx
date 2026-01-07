@@ -24,6 +24,23 @@ export default function Twin() {
     };
 
     useEffect(() => {
+        // Warm up the lambda
+        const warmUp = async () => {
+            try {
+                await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/health`, {
+                    headers: {
+                        'x-api-key': `${process.env.NEXT_PUBLIC_HEALTH_ENDPOINT_API_KEY}`
+                    }
+                });
+            } catch (error) {
+                console.error('Warm-up failed:', error);
+            }
+        };
+        warmUp();
+    }, []);
+
+    useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
