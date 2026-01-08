@@ -54,16 +54,18 @@ async def root():
     return {
         "message": "AI Digital Twin API",
         "memory_enabled": True,
-        "response": "Every response is evaluated for accuracy and appropriateness."
+        "storage": "S3" if USE_S3 else "local",
+        "ai_model": model_name,
     }
 
 
 @app.get("/health")
 async def health_check():
     return {
+        "message": "AI Digital Twin of Kaushik Paul",
         "status": "healthy",
-        "use_s3": USE_S3,
-        "model": model_name,
+        "memory_enabled": True,
+        "response": "Every response is evaluated for accuracy and appropriateness."
     }
 
 
