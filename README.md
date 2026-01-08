@@ -148,6 +148,8 @@ Open http://localhost:3000 and start chatting.
 - `USE_S3` — `true|false` to store conversation memory in S3
 - `S3_BUCKET` — bucket for memory when `USE_S3=true`
 - `MEMORY_DIR` — local memory folder when `USE_S3=false` (default: `../memory` relative to backend)
+- `CHAT_ENDPOINT_API_KEY` — API key that must match incoming `x-api-key` headers when validation is enabled
+- `CHECK_CHAT_API_KEY` — `true|false` toggle to enforce chat API key validation (defaults to `false`; enable in prod)
 - Optional for CI/deploy scripts: `AWS_ACCOUNT_ID`
 
 ### Frontend env
