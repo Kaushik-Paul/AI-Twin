@@ -16,6 +16,7 @@ export default function Twin() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [sessionId, setSessionId] = useState<string>('');
+    const [warmupDone, setWarmupDone] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,8 @@ export default function Twin() {
                 });
             } catch (error) {
                 console.error('Warm-up failed:', error);
+            } finally {
+                setWarmupDone(true);
             }
         };
         warmUp();
@@ -45,7 +48,7 @@ export default function Twin() {
     }, [messages]);
 
     const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+        if (!warmupDone || !input.trim() || isLoading) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -107,7 +110,7 @@ export default function Twin() {
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && warmupDone) {
             e.preventDefault();
             sendMessage();
         }
@@ -215,7 +218,8 @@ export default function Twin() {
                     />
                     <button
                         onClick={sendMessage}
-                        disabled={!input.trim() || isLoading}
+                        disabled={!warmupDone || !input.trim() || isLoading}
+                        title={!warmupDone ? 'Please wait few seconds, chat warming up' : undefined}
                         className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         <Send className="w-5 h-5" />
