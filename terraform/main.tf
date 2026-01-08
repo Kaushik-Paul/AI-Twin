@@ -146,6 +146,8 @@ resource "aws_lambda_function" "api" {
       MAILJET_API_SECRET = var.mailjet_api_secret
       MAILJET_FROM_EMAIL = var.mailjet_from_email
       MAILJET_TO_EMAIL = var.mailjet_to_email
+      CHAT_ENDPOINT_API_KEY = var.chat_endpoint_api_key
+      CHECK_CHAT_API_KEY   = var.check_chat_api_key ? "true" : "false"
     }
   }
 
