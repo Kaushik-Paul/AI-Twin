@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -24,6 +24,10 @@ load_dotenv(override=True)
 model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
 app = FastAPI()
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
+
+# Chat endpoint API key enforcement settings
+CHAT_ENDPOINT_API_KEY = os.getenv("CHAT_ENDPOINT_API_KEY")
+CHECK_CHAT_API_KEY = os.getenv("CHECK_CHAT_API_KEY", "false").lower() == "true"
 
 # Configure CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -65,8 +69,14 @@ async def health_check():
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, x_api_key: str = Header(None, alias="x-api-key")):
     try:
+        # Validate API key if enforcement is enabled
+        if CHECK_CHAT_API_KEY:
+            if x_api_key is None or x_api_key != CHAT_ENDPOINT_API_KEY:
+                logger.warning("Unauthorized chat request: invalid API key")
+                raise HTTPException(status_code=401, detail="Invalid API key for chat endpoint")
+
         # Generate session ID if not provided
         session_id = request.session_id or str(uuid.uuid4())
 

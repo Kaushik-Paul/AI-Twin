@@ -101,3 +101,13 @@ variable "mailjet_to_email" {
   type = string
 }
 
+variable "chat_endpoint_api_key" {
+  description = "API key for chat endpoint, passed to Lambda for validation"
+  type        = string
+}
+
+variable "check_chat_api_key" {
+  description = "When true, Lambda will validate incoming chat requests against the chat API key"
+  type        = bool
+  default     = false
+}
