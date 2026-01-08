@@ -54,8 +54,7 @@ async def root():
     return {
         "message": "AI Digital Twin API",
         "memory_enabled": True,
-        "storage": "S3" if USE_S3 else "local",
-        "ai_model": model_name,
+        "response": "Every response is evaluated for accuracy and appropriateness."
     }
 
 
