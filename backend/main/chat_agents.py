@@ -44,11 +44,21 @@ def record_unknown_question(question: str) -> str:
         logger.error("record_unknown_question failed: %s", str(e))
         raise
 
+@function_tool
+def send_resume_to_user(email: str) -> str:
+    """Send the resume PDF to the user's email address when they request it and has provided an email address"""
+    try:
+        send_email_client.send_resume_to_user(to_email=email)
+        return "Resume sent successfully"
+    except Exception as e:
+        logger.error("send_resume_to_user failed for email=%s: %s", email, str(e))
+        raise
+
 litellm_model = LitellmModel(model=litellm_model_name)
 
 chat_agent = Agent(
     name="Digital Twin Agent",
     instructions=ChatPrompt.prompt(),
-    tools=[record_user_details, record_unknown_question],
+    tools=[record_user_details, record_unknown_question, send_resume_to_user],
     model=litellm_model,
 )

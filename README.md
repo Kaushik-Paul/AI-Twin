@@ -259,7 +259,7 @@ Cleans S3 buckets, and runs `terraform destroy` for the workspace.
    pip install -r requirements.txt
    
    # Run FastAPI server
-   uvicorn server:app --reload --port 8000
+   uvicorn main.server:app --reload --port 8000
    ```
 
 2. **Start the frontend**:
