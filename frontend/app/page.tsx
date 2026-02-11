@@ -1,26 +1,27 @@
+'use client';
+
 import Twin from '@/components/twin';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
-            Career Conversation Digital Avatar
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Kaushik Paul&#39;s career conversation digital avatar
-          </p>
+    <main className="h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
+      {/* Top bar with theme toggle */}
+      <div className="flex items-center justify-end px-4 py-3 sm:px-6">
+        <ThemeToggle />
+      </div>
 
-          <div className="h-[600px]">
-            <Twin />
-          </div>
-
-          <footer className="mt-8 text-center text-sm text-gray-500">
-            <p>All rights reserved &copy; {new Date().getFullYear()}</p>
-          </footer>
+      {/* Chat container — centered on desktop, full-width on mobile */}
+      <div className="flex-1 min-h-0 px-0 md:px-6 md:pb-6">
+        <div className="chat-container">
+          <Twin />
         </div>
       </div>
+
+      {/* Minimal footer */}
+      <footer className="py-2 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p>All rights reserved &copy; {new Date().getFullYear()}</p>
+      </footer>
     </main>
   );
 }
