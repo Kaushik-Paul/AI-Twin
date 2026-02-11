@@ -21,7 +21,12 @@ export default function MarkdownMessage({ content }: MarkdownMessageProps) {
                     if (inline) {
                         return (
                             <code
-                                className="px-1 py-0.5 rounded bg-slate-100 font-mono text-sm"
+                                className="px-1.5 py-0.5 rounded-md text-sm font-[family-name:var(--font-mono)]"
+                                style={{
+                                    background: 'var(--code-inline-bg)',
+                                    color: 'var(--accent-hover)',
+                                    border: '1px solid var(--code-inline-border)',
+                                }}
                                 {...rest}
                             >
                                 {children}
@@ -29,11 +34,20 @@ export default function MarkdownMessage({ content }: MarkdownMessageProps) {
                         );
                     }
                     return (
-                        <pre className="bg-slate-900 text-slate-100 p-3 rounded-md overflow-x-auto text-sm">
-                            <code className={className} {...rest}>
-                                {children}
-                            </code>
-                        </pre>
+                        <div className="rounded-lg overflow-hidden my-2" style={{ border: '1px solid var(--border-subtle)' }}>
+                            <div
+                                className="h-0.5"
+                                style={{ background: 'linear-gradient(90deg, var(--accent), transparent)' }}
+                            />
+                            <pre
+                                className="p-4 overflow-x-auto text-sm font-[family-name:var(--font-mono)]"
+                                style={{ background: 'var(--code-block-bg)', color: 'var(--code-block-text)' }}
+                            >
+                                <code className={className} {...rest}>
+                                    {children}
+                                </code>
+                            </pre>
+                        </div>
                     );
                 },
             }}
