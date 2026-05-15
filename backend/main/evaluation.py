@@ -12,6 +12,7 @@ from .model_client import (
     active_evaluation_model_name,
     opencode_go_completion,
     parse_json_model_response,
+    use_evaluation_openrouter,
     use_openrouter,
 )
 
@@ -52,7 +53,7 @@ class ChatEvaluation:
         self.evaluator_system_prompt = EvaluationPrompt().fetch_evaluator_system_prompt()
         self.client = (
             OpenAI(api_key=openrouter_api_key, base_url=constants.OPENROUTER_BASE_URL)
-            if use_openrouter()
+            if use_openrouter() or use_evaluation_openrouter()
             else None
         )
         self.provider_preferences = self._build_provider_preferences()
@@ -79,7 +80,7 @@ class ChatEvaluation:
 
         messages = [{"role": "system", "content": self.evaluator_system_prompt}] + [{"role": "user", "content": EvaluationPrompt.evaluator_user_prompt(reply, message, history)}]
         try:
-            if use_openrouter():
+            if use_evaluation_openrouter():
                 request_kwargs = {
                     "model": evaluator_model_name,
                     "input": messages,
