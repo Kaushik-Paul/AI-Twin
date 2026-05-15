@@ -11,7 +11,8 @@ An AI-powered digital twin that represents Kaushik Paul in conversations. Users 
 - **Backend**: FastAPI on AWS Lambda (via API Gateway + Terraform)
 - **Frontend**: Next.js static export on S3 + CloudFront
 - **AI Providers**:
-  - Main branch: OpenRouter models
+  - OpenCode Go models
+  - OpenRouter models
   - AWS Bedrock branch: Amazon Bedrock (e.g., `apac.amazon.nova-lite-v1:0`)
 
 ---
@@ -19,7 +20,8 @@ An AI-powered digital twin that represents Kaushik Paul in conversations. Users 
 ## Features
 - **Chat with a Digital Twin** using `/chat` endpoint and persistent session memory
 - **Two AI integration modes**:
-  - OpenRouter (default on `main`)
+  - OpenCode Go (default on `main`)
+  - OpenRouter via `USE_OPENROUTER=true`
   - Amazon Bedrock (on `aws-bedrock` branch)
 - **Persistent memory** stored locally or in S3
 - [x] **Tool-based follow-up capture**: when a visitor shares an email or clearly asks to stay in touch, the agent uses tools to trigger a Mailjet-backed notification so potential recruiters/clients can easily follow up.
@@ -39,9 +41,10 @@ An AI-powered digital twin that represents Kaushik Paul in conversations. Users 
   - Static export (`frontend/next.config.ts` sets `output: 'export'`)
   - Main chat component: `frontend/components/twin.tsx` (calls backend `/chat`)
 - **Backend** (`backend/`)
-  - FastAPI app in `backend/server.py`
+  - FastAPI app in `backend/main/server.py`
   - Lambda wrapper via `backend/lambda_handler.py` (Mangum)
-  - Prompt and profile context in `backend/context.py`
+  - Prompt and profile context in `backend/main/context.py`
+  - Provider selection in `backend/main/model_client.py`
   - Deployment packaging script: `backend/deploy.py`
 - **Infrastructure** (`terraform/`)
   - API Gateway, Lambda, S3 (frontend + memory), CloudFront
@@ -53,14 +56,16 @@ An AI-powered digital twin that represents Kaushik Paul in conversations. Users 
 ---
 
 ## Branches & AI Providers
-- **`main` (default)** — uses OpenRouter
-  - Config in `backend/server.py` via `OpenAI(base_url=https://openrouter.ai/api/v1)`
-  - Model example: `google/gemini-2.5-flash-lite`
+- **`main` (default)** — supports OpenCode Go and OpenRouter with an environment switch
+  - `USE_OPENROUTER=false` or unset uses OpenCode Go
+  - `USE_OPENROUTER=true` keeps the OpenRouter path
+  - OpenCode Go default model: `deepseek-v4-flash`
+  - OpenRouter model example: `google/gemini-2.5-flash-lite`
 - **`aws-bedrock`** — uses Amazon Bedrock
   - Reads `BEDROCK_MODEL_ID` and uses `bedrock-runtime` client
   - Useful for AWS-native deployments where Bedrock access is available
 
-Switch branches depending on your provider. Both share the same API contract for the frontend (`/chat`, `/health`, `/conversation/{session_id}`).
+The frontend API contract is the same for all providers (`/chat`, `/health`, `/conversation/{session_id}`).
 
 ---
 
@@ -69,7 +74,7 @@ Switch branches depending on your provider. Both share the same API contract for
 - `POST /chat` — body: `{ message: string, session_id?: string }` → returns `{ response, session_id }`
 - `GET /conversation/{session_id}` — retrieve persisted messages
 
-The backend maintains conversation history and limits context to recent messages. See `backend/server.py` for details.
+The backend maintains conversation history and limits context to recent messages. See `backend/main/server.py` for details.
 
 ---
 
@@ -102,12 +107,20 @@ python -m venv .venv && source .venv/bin/activate
 # install deps
 pip install -r backend/requirements.txt
 
-# set local env (edit .env or export here)
-# minimal for local OpenRouter mode
-export OPENROUTER_API_KEY=sk-or-...
+# set local env (edit root .env or export here)
+# minimal for local OpenCode Go mode
+export USE_OPENROUTER=false
+export OPENCODE_GO_API_KEY=...
+export OPENCODE_GO_MODEL=deepseek-v4-flash
 export CORS_ORIGINS=http://localhost:3000
 
+# for OpenRouter instead:
+# export USE_OPENROUTER=true
+# export OPENROUTER_API_KEY=sk-or-...
+# export DEFAULT_MODEL_NAME=google/gemini-2.5-flash-lite
+
 # run locally
+cd backend
 uvicorn main.server:app --reload --port 8000
 ```
 
@@ -137,9 +150,15 @@ Open http://localhost:3000 and start chatting.
 ## Environment Variables
 
 ### Root `.env` (read by backend and scripts)
-- `OPENROUTER_API_KEY` — required on `main` branch for OpenRouter
-- `DEFAULT_MODEL_NAME` — default chat model slug (e.g., `google/gemini-2.5-flash-lite`)
-- `EVALUATION_MODEL_NAME` — evaluator model slug (defaults to `DEFAULT_MODEL_NAME` when unset)
+- `USE_OPENROUTER` — `true|false`; `true` uses OpenRouter, `false` or unset uses OpenCode Go
+- `OPENCODE_GO_API_KEY` — required when `USE_OPENROUTER=false`
+- `OPENCODE_GO_MODEL` — OpenCode Go chat model ID (defaults to `deepseek-v4-flash`)
+- `OPENCODE_GO_EVALUATION_MODEL` — OpenCode Go evaluator model ID (defaults to `OPENCODE_GO_MODEL` when unset)
+- `OPENCODE_GO_API_STYLE` — `auto|openai|anthropic` (defaults to `auto`)
+- `OPENCODE_GO_DISABLE_THINKING` — `true|false`; defaults to `true` for OpenCode Go OpenAI-compatible requests
+- `OPENROUTER_API_KEY` — required when `USE_OPENROUTER=true`
+- `DEFAULT_MODEL_NAME` — OpenRouter chat model slug (e.g., `google/gemini-2.5-flash-lite`)
+- `EVALUATION_MODEL_NAME` — OpenRouter evaluator model slug
 - `EVALUATION_PROVIDER_ORDER_ENABLED` — `true|false` toggle (defaults to `false`) to apply the provider order; fallbacks stay enabled
 - `EVALUATION_PROVIDER_ORDER` — comma-separated provider slugs in priority order for the evaluator
 - `CORS_ORIGINS` — comma-separated origins for CORS (e.g., `http://localhost:3000`)
@@ -185,7 +204,7 @@ What it does:
 - Builds the Next.js site and uploads to the frontend S3 bucket
 - Prints CloudFront and API Gateway URLs
 
-The script reads `.env` and passes `OPENROUTER_API_KEY` to Terraform as `TF_VAR_openrouter_api_key`.
+The script reads `.env` and passes provider settings such as `USE_OPENROUTER`, `OPENROUTER_API_KEY`, `OPENCODE_GO_API_KEY`, and `OPENCODE_GO_MODEL` to Terraform as `TF_VAR_*` values.
 
 > The deploy script invokes `uv run backend/deploy.py`. Ensure `uv` is installed and on PATH (see Prerequisites).
 
@@ -205,7 +224,10 @@ The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) 
 - `AWS_ROLE_ARN`: IAM Role ARN with deployment permissions
 - `AWS_ACCOUNT_ID`: Your AWS account ID
 - `DEFAULT_AWS_REGION`: AWS region (e.g., `us-east-1`)
-- `OPENROUTER_API_KEY`: Your OpenRouter API key (for main branch)
+- `USE_OPENROUTER`: `true` for OpenRouter or `false` for OpenCode Go
+- `OPENCODE_GO_API_KEY`: Your OpenCode Go API key
+- `OPENCODE_GO_MODEL`: Optional OpenCode Go model ID, e.g. `deepseek-v4-flash`
+- `OPENROUTER_API_KEY`: Your OpenRouter API key, required only when `USE_OPENROUTER=true`
 - `BEDROCK_MODEL_ID`: (Optional) For aws-bedrock branch deployments
 
 **Workflow Steps:**
@@ -232,7 +254,7 @@ Cleans S3 buckets, and runs `terraform destroy` for the workspace.
 |------------------|--------------|
 | **Frontend**     | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Lucide Icons |
 | **Backend**      | FastAPI, Uvicorn, Mangum (Lambda), Pydantic, Python 3.12 |
-| **AI**           | OpenRouter (main) / Amazon Bedrock (aws-bedrock branch) |
+| **AI**           | OpenCode Go / OpenRouter (main), Amazon Bedrock (aws-bedrock branch) |
 | **Infrastructure** | AWS Lambda, API Gateway, S3, CloudFront, Route 53, CloudWatch |
 | **DevOps**       | Terraform, GitHub Actions, Docker |
 | **Testing**      | Pytest, Jest, React Testing Library |
@@ -241,7 +263,7 @@ Cleans S3 buckets, and runs `terraform destroy` for the workspace.
 **Key Features**:
 - **Frontend**: Modern React with TypeScript and responsive design
 - **Backend**: Serverless FastAPI with Lambda support
-- **AI**: Dual-provider support (OpenRouter & Bedrock)
+- **AI**: Runtime switch between OpenCode Go and OpenRouter, plus Bedrock on the aws-bedrock branch
 - **Infrastructure**: Fully automated IaC with Terraform
 - **CI/CD**: GitHub Actions for automated testing and deployment
 
@@ -319,7 +341,8 @@ Cleans S3 buckets, and runs `terraform destroy` for the workspace.
   - Check available disk space (minimum 2GB free space required)
   - The deploy script uses `public.ecr.aws/lambda/python:3.12` image
 
-- **Model access**: 
+- **Model access**:
+  - **OpenCode Go**: Verify `OPENCODE_GO_API_KEY` is valid and `OPENCODE_GO_MODEL` is a Go model ID such as `deepseek-v4-flash`
   - **OpenRouter**: Verify `OPENROUTER_API_KEY` is valid and has sufficient credits
   - **Bedrock**: Confirm `BEDROCK_MODEL_ID` is correct and IAM roles have `bedrock:InvokeModel` permission
 

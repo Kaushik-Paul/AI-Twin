@@ -133,21 +133,27 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      CORS_ORIGINS     = var.use_custom_domain ? "https://${var.root_domain},https://www.${var.root_domain}" : "https://${aws_cloudfront_distribution.main.domain_name}"
-      S3_BUCKET        = aws_s3_bucket.memory.id
-      USE_S3           = "true"
-      BEDROCK_MODEL_ID = var.bedrock_model_id
-      OPENROUTER_API_KEY = var.openrouter_api_key
-      DEFAULT_MODEL_NAME = var.default_model_name
-      EVALUATION_MODEL_NAME = var.evaluation_model_name
+      CORS_ORIGINS                      = var.use_custom_domain ? "https://${var.root_domain},https://www.${var.root_domain}" : "https://${aws_cloudfront_distribution.main.domain_name}"
+      S3_BUCKET                         = aws_s3_bucket.memory.id
+      USE_S3                            = "true"
+      BEDROCK_MODEL_ID                  = var.bedrock_model_id
+      USE_OPENROUTER                    = var.use_openrouter ? "true" : "false"
+      USE_EVALUATION_OPENROUTER         = var.use_evaluation_openrouter ? "true" : "false"
+      OPENROUTER_API_KEY                = var.openrouter_api_key
+      DEFAULT_MODEL_NAME                = var.default_model_name
+      EVALUATION_MODEL_NAME             = var.evaluation_model_name
       EVALUATION_PROVIDER_ORDER_ENABLED = var.evaluation_provider_order_enabled ? "true" : "false"
-      EVALUATION_PROVIDER_ORDER = var.evaluation_provider_order
-      MAILJET_API_KEY = var.mailjet_api_key
-      MAILJET_API_SECRET = var.mailjet_api_secret
-      MAILJET_FROM_EMAIL = var.mailjet_from_email
-      MAILJET_TO_EMAIL = var.mailjet_to_email
-      CHAT_ENDPOINT_API_KEY = var.chat_endpoint_api_key
-      CHECK_CHAT_API_KEY   = var.check_chat_api_key ? "true" : "false"
+      EVALUATION_PROVIDER_ORDER         = var.evaluation_provider_order
+      OPENCODE_GO_API_KEY               = var.opencode_go_api_key
+      OPENCODE_GO_MODEL                 = var.opencode_go_model
+      OPENCODE_GO_API_STYLE             = var.opencode_go_api_style
+      OPENCODE_GO_DISABLE_THINKING      = var.opencode_go_disable_thinking ? "true" : "false"
+      MAILJET_API_KEY                   = var.mailjet_api_key
+      MAILJET_API_SECRET                = var.mailjet_api_secret
+      MAILJET_FROM_EMAIL                = var.mailjet_from_email
+      MAILJET_TO_EMAIL                  = var.mailjet_to_email
+      CHAT_ENDPOINT_API_KEY             = var.chat_endpoint_api_key
+      CHECK_CHAT_API_KEY                = var.check_chat_api_key ? "true" : "false"
     }
   }
 
