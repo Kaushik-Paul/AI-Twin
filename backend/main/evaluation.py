@@ -7,6 +7,13 @@ from openai import OpenAI
 
 from .context import EvaluationPrompt
 from . import constants
+from .model_client import (
+    active_chat_model_name,
+    active_evaluation_model_name,
+    opencode_go_completion,
+    parse_json_model_response,
+    use_openrouter,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,8 +22,8 @@ load_dotenv(override=True)
 
 groq_api_key = os.getenv('GROQ_API_KEY')
 openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
-model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
-evaluator_model_name = os.getenv("EVALUATION_MODEL_NAME", "google/gemini-2.5-flash-lite")
+model_name = active_chat_model_name()
+evaluator_model_name = active_evaluation_model_name()
 
 
 def _parse_comma_separated_env(var_name: str) -> Optional[List[str]]:
@@ -43,7 +50,11 @@ class Evaluation(BaseModel):
 class ChatEvaluation:
     def __init__(self):
         self.evaluator_system_prompt = EvaluationPrompt().fetch_evaluator_system_prompt()
-        self.client = OpenAI(api_key=openrouter_api_key, base_url=constants.OPENROUTER_BASE_URL)
+        self.client = (
+            OpenAI(api_key=openrouter_api_key, base_url=constants.OPENROUTER_BASE_URL)
+            if use_openrouter()
+            else None
+        )
         self.provider_preferences = self._build_provider_preferences()
 
     @staticmethod
@@ -68,17 +79,31 @@ class ChatEvaluation:
 
         messages = [{"role": "system", "content": self.evaluator_system_prompt}] + [{"role": "user", "content": EvaluationPrompt.evaluator_user_prompt(reply, message, history)}]
         try:
-            request_kwargs = {
-                "model": evaluator_model_name,
-                "input": messages,
-                "text_format": Evaluation,
-            }
+            if use_openrouter():
+                request_kwargs = {
+                    "model": evaluator_model_name,
+                    "input": messages,
+                    "text_format": Evaluation,
+                }
 
-            # Extra body for provider preferences
-            if self.provider_preferences:
-                request_kwargs["extra_body"] = {"provider": self.provider_preferences}
-            response = self.client.responses.parse(**request_kwargs)
-            return response.output_parsed
+                # Extra body for provider preferences
+                if self.provider_preferences:
+                    request_kwargs["extra_body"] = {"provider": self.provider_preferences}
+                response = self.client.responses.parse(**request_kwargs)
+                return response.output_parsed
+
+            messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "Return only JSON with this shape: "
+                        '{"is_acceptable": boolean, "feedback": string}.'
+                    ),
+                }
+            )
+            response = opencode_go_completion(messages, evaluator_model_name)
+            content = response.choices[0].message.content or ""
+            return parse_json_model_response(content, Evaluation)
         except Exception as e:
             logger.error("Evaluation API call failed: %s", str(e))
             raise
@@ -99,7 +124,10 @@ class ChatEvaluation:
         updated_system_prompt += f"## Reason for rejection:\n{feedback}\n\n"
         messages = [{"role": "system", "content": updated_system_prompt}] + history + [{"role": "user", "content": message}]
         try:
-            response = self.client.chat.completions.create(model=model_name, messages=messages)
+            if use_openrouter():
+                response = self.client.chat.completions.create(model=model_name, messages=messages)
+            else:
+                response = opencode_go_completion(messages, model_name)
             return response.choices[0].message.content
         except Exception as e:
             logger.error("Rerun API call failed: %s", str(e))

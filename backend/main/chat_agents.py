@@ -1,12 +1,11 @@
-import os
 import logging
 from dotenv import load_dotenv
 from agents import Agent, function_tool, set_tracing_disabled
-from agents.extensions.models.litellm_model import LitellmModel
 
 from typing import Optional
 from .context import ChatPrompt
 from .email_sender import MailJetEmail
+from .model_client import create_agent_model
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -14,9 +13,6 @@ logger.setLevel(logging.INFO)
 load_dotenv(override=True)
 
 set_tracing_disabled(True)
-
-model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
-litellm_model_name = "openrouter/" + model_name
 
 send_email_client = MailJetEmail()
 
@@ -54,11 +50,9 @@ def send_resume_to_user(email: str) -> str:
         logger.error("send_resume_to_user failed for email=%s: %s", email, str(e))
         raise
 
-litellm_model = LitellmModel(model=litellm_model_name)
-
 chat_agent = Agent(
     name="Digital Twin Agent",
     instructions=ChatPrompt.prompt(),
     tools=[record_user_details, record_unknown_question, send_resume_to_user],
-    model=litellm_model,
+    model=create_agent_model(),
 )

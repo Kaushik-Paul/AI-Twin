@@ -17,11 +17,12 @@ from .chat_agents import chat_agent
 from .context import ChatPrompt
 from .conversation import load_conversation, save_conversation
 from .evaluation import ChatEvaluation
+from .model_client import active_chat_model_name
 
 # Load environment variables
 load_dotenv(override=True)
 
-model_name = os.getenv("DEFAULT_MODEL_NAME", "google/gemini-2.5-flash-lite")
+model_name = active_chat_model_name()
 app = FastAPI()
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 
