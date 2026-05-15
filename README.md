@@ -110,6 +110,7 @@ pip install -r backend/requirements.txt
 # set local env (edit root .env or export here)
 # minimal for local OpenCode Go mode
 export USE_OPENROUTER=false
+export USE_EVALUATION_OPENROUTER=false
 export OPENCODE_GO_API_KEY=...
 export OPENCODE_GO_MODEL=deepseek-v4-flash
 export CORS_ORIGINS=http://localhost:3000
@@ -118,6 +119,8 @@ export CORS_ORIGINS=http://localhost:3000
 # export USE_OPENROUTER=true
 # export OPENROUTER_API_KEY=sk-or-...
 # export DEFAULT_MODEL_NAME=google/gemini-2.5-flash-lite
+# export USE_EVALUATION_OPENROUTER=true
+# export EVALUATION_MODEL_NAME=google/gemini-2.5-flash-lite
 
 # run locally
 cd backend
@@ -151,14 +154,14 @@ Open http://localhost:3000 and start chatting.
 
 ### Root `.env` (read by backend and scripts)
 - `USE_OPENROUTER` — `true|false`; `true` uses OpenRouter, `false` or unset uses OpenCode Go
-- `OPENCODE_GO_API_KEY` — required when `USE_OPENROUTER=false`
-- `OPENCODE_GO_MODEL` — OpenCode Go chat model ID (defaults to `deepseek-v4-flash`)
-- `OPENCODE_GO_EVALUATION_MODEL` — OpenCode Go evaluator model ID (defaults to `OPENCODE_GO_MODEL` when unset)
+- `USE_EVALUATION_OPENROUTER` — `true|false`; `true` uses OpenRouter for evaluation, `false` or unset uses OpenCode Go
+- `OPENCODE_GO_API_KEY` — required when chat or evaluation uses OpenCode Go
+- `OPENCODE_GO_MODEL` — OpenCode Go chat and evaluator model ID (defaults to `deepseek-v4-flash`)
 - `OPENCODE_GO_API_STYLE` — `auto|openai|anthropic` (defaults to `auto`)
 - `OPENCODE_GO_DISABLE_THINKING` — `true|false`; defaults to `true` for OpenCode Go OpenAI-compatible requests
-- `OPENROUTER_API_KEY` — required when `USE_OPENROUTER=true`
+- `OPENROUTER_API_KEY` — required when `USE_OPENROUTER=true` or `USE_EVALUATION_OPENROUTER=true`
 - `DEFAULT_MODEL_NAME` — OpenRouter chat model slug (e.g., `google/gemini-2.5-flash-lite`)
-- `EVALUATION_MODEL_NAME` — OpenRouter evaluator model slug
+- `EVALUATION_MODEL_NAME` — OpenRouter evaluator model slug, used only when `USE_EVALUATION_OPENROUTER=true`
 - `EVALUATION_PROVIDER_ORDER_ENABLED` — `true|false` toggle (defaults to `false`) to apply the provider order; fallbacks stay enabled
 - `EVALUATION_PROVIDER_ORDER` — comma-separated provider slugs in priority order for the evaluator
 - `CORS_ORIGINS` — comma-separated origins for CORS (e.g., `http://localhost:3000`)
@@ -204,7 +207,7 @@ What it does:
 - Builds the Next.js site and uploads to the frontend S3 bucket
 - Prints CloudFront and API Gateway URLs
 
-The script reads `.env` and passes provider settings such as `USE_OPENROUTER`, `OPENROUTER_API_KEY`, `OPENCODE_GO_API_KEY`, and `OPENCODE_GO_MODEL` to Terraform as `TF_VAR_*` values.
+The script reads `.env` and passes provider settings such as `USE_OPENROUTER`, `USE_EVALUATION_OPENROUTER`, `OPENROUTER_API_KEY`, `OPENCODE_GO_API_KEY`, and `OPENCODE_GO_MODEL` to Terraform as `TF_VAR_*` values.
 
 > The deploy script invokes `uv run backend/deploy.py`. Ensure `uv` is installed and on PATH (see Prerequisites).
 
@@ -225,9 +228,10 @@ The project includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) 
 - `AWS_ACCOUNT_ID`: Your AWS account ID
 - `DEFAULT_AWS_REGION`: AWS region (e.g., `us-east-1`)
 - `USE_OPENROUTER`: `true` for OpenRouter or `false` for OpenCode Go
+- `USE_EVALUATION_OPENROUTER`: `true` for OpenRouter evaluation or `false` for OpenCode Go evaluation
 - `OPENCODE_GO_API_KEY`: Your OpenCode Go API key
 - `OPENCODE_GO_MODEL`: Optional OpenCode Go model ID, e.g. `deepseek-v4-flash`
-- `OPENROUTER_API_KEY`: Your OpenRouter API key, required only when `USE_OPENROUTER=true`
+- `OPENROUTER_API_KEY`: Your OpenRouter API key, required when `USE_OPENROUTER=true` or `USE_EVALUATION_OPENROUTER=true`
 - `BEDROCK_MODEL_ID`: (Optional) For aws-bedrock branch deployments
 
 **Workflow Steps:**
