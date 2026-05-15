@@ -14,11 +14,35 @@ if [ -f .env ]; then
   set -a
   source .env
   set +a
+fi
 
-  # Expose OpenRouter API key to Terraform (TF_VAR_ prefix)
-  if [ -n "$OPENROUTER_API_KEY" ]; then
-    export TF_VAR_openrouter_api_key="$OPENROUTER_API_KEY"
-  fi
+# Expose provider settings to Terraform (TF_VAR_ prefix)
+if [ -n "$USE_OPENROUTER" ]; then
+  export TF_VAR_use_openrouter="$USE_OPENROUTER"
+fi
+
+if [ -n "$USE_EVALUATION_OPENROUTER" ]; then
+  export TF_VAR_use_evaluation_openrouter="$USE_EVALUATION_OPENROUTER"
+fi
+
+if [ -n "$OPENROUTER_API_KEY" ]; then
+  export TF_VAR_openrouter_api_key="$OPENROUTER_API_KEY"
+fi
+
+if [ -n "$OPENCODE_GO_API_KEY" ]; then
+  export TF_VAR_opencode_go_api_key="$OPENCODE_GO_API_KEY"
+fi
+
+if [ -n "$OPENCODE_GO_MODEL" ]; then
+  export TF_VAR_opencode_go_model="$OPENCODE_GO_MODEL"
+fi
+
+if [ -n "$OPENCODE_GO_API_STYLE" ]; then
+  export TF_VAR_opencode_go_api_style="$OPENCODE_GO_API_STYLE"
+fi
+
+if [ -n "$OPENCODE_GO_DISABLE_THINKING" ]; then
+  export TF_VAR_opencode_go_disable_thinking="$OPENCODE_GO_DISABLE_THINKING"
 fi
 
 # 1. Build Lambda package

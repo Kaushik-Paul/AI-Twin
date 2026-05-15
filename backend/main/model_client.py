@@ -38,6 +38,10 @@ def use_openrouter() -> bool:
     return _env_bool("USE_OPENROUTER", default=False)
 
 
+def use_evaluation_openrouter() -> bool:
+    return _env_bool("USE_EVALUATION_OPENROUTER", default=False)
+
+
 def active_chat_model_name() -> str:
     if use_openrouter():
         return os.getenv("DEFAULT_MODEL_NAME", DEFAULT_OPENROUTER_MODEL)
@@ -45,9 +49,9 @@ def active_chat_model_name() -> str:
 
 
 def active_evaluation_model_name() -> str:
-    if use_openrouter():
+    if use_evaluation_openrouter():
         return os.getenv("EVALUATION_MODEL_NAME", DEFAULT_OPENROUTER_MODEL)
-    return os.getenv("OPENCODE_GO_EVALUATION_MODEL") or active_chat_model_name()
+    return os.getenv("OPENCODE_GO_MODEL", DEFAULT_OPENCODE_GO_MODEL)
 
 
 def _opencode_go_model_name(model: str, api_style: str) -> str:

@@ -55,18 +55,61 @@ variable "root_domain" {
 variable "openrouter_api_key" {
   description = "OpenRouter API key (passed to Lambda)"
   type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "use_openrouter" {
+  description = "When true, Lambda uses OpenRouter. When false, Lambda uses OpenCode Go."
+  type        = bool
+  default     = false
+}
+
+variable "use_evaluation_openrouter" {
+  description = "When true, evaluation uses OpenRouter. When false, evaluation uses OpenCode Go."
+  type        = bool
+  default     = false
+}
+
+variable "opencode_go_api_key" {
+  description = "OpenCode Go API key (passed to Lambda)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "opencode_go_model" {
+  description = "OpenCode Go model ID"
+  type        = string
+  default     = "deepseek-v4-flash"
+}
+
+variable "opencode_go_api_style" {
+  description = "OpenCode Go API style: auto, openai, or anthropic"
+  type        = string
+  default     = "auto"
+  validation {
+    condition     = contains(["auto", "openai", "anthropic"], var.opencode_go_api_style)
+    error_message = "OpenCode Go API style must be one of: auto, openai, anthropic."
+  }
+}
+
+variable "opencode_go_disable_thinking" {
+  description = "Disable OpenCode Go thinking mode on OpenAI-compatible requests"
+  type        = bool
+  default     = true
 }
 
 variable "default_model_name" {
-  description = "Default openrouter model name"
-  type = string
-  default = "google/gemini-2.5-flash-lite"
+  description = "Default OpenRouter chat model name"
+  type        = string
+  default     = "google/gemini-2.5-flash-lite"
 }
 
 variable "evaluation_model_name" {
-  description = "Model that will be used for evaluation of responses (from Groq)"
-  type = string
-  default = "google/gemini-2.5-flash-lite"
+  description = "OpenRouter model that will be used for evaluation of responses"
+  type        = string
+  default     = "google/gemini-2.5-flash-lite"
 }
 
 variable "evaluation_provider_order_enabled" {
@@ -83,22 +126,22 @@ variable "evaluation_provider_order" {
 
 variable "mailjet_api_key" {
   description = "Mailjet API key"
-  type = string
+  type        = string
 }
 
 variable "mailjet_api_secret" {
   description = "Mailjet API secret"
-  type = string
+  type        = string
 }
 
 variable "mailjet_from_email" {
   description = "Mailjet from email address that will be send"
-  type = string
+  type        = string
 }
 
 variable "mailjet_to_email" {
   description = "Mailjet to email address that will be send"
-  type = string
+  type        = string
 }
 
 variable "chat_endpoint_api_key" {
