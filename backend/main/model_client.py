@@ -66,19 +66,17 @@ def _with_opencode_model_settings(
 
     if "model_settings" in kwargs:
         model_settings = kwargs["model_settings"]
-        extra_body = {**(model_settings.extra_body or {}), "thinking": {"type": "disabled"}}
-        allowed_params = [
-            *(model_settings.extra_args or {}).get("allowed_openai_params", []),
-            "thinking",
-        ]
-        extra_args = {
-            **(model_settings.extra_args or {}),
-            "allowed_openai_params": list(dict.fromkeys(allowed_params)),
+        extra_body = {
+            **(model_settings.extra_body or {}),
+            "extra_body": {
+                **(model_settings.extra_body or {}).get("extra_body", {}),
+                "thinking": {"type": "disabled"},
+            },
         }
         kwargs = {
             **kwargs,
             "model_settings": replace(
-                model_settings, extra_body=extra_body, extra_args=extra_args
+                model_settings, extra_body=extra_body
             ),
         }
         return args, kwargs
@@ -88,18 +86,16 @@ def _with_opencode_model_settings(
         return args, kwargs
 
     model_settings = args[model_settings_index]
-    extra_body = {**(model_settings.extra_body or {}), "thinking": {"type": "disabled"}}
-    allowed_params = [
-        *(model_settings.extra_args or {}).get("allowed_openai_params", []),
-        "thinking",
-    ]
-    extra_args = {
-        **(model_settings.extra_args or {}),
-        "allowed_openai_params": list(dict.fromkeys(allowed_params)),
+    extra_body = {
+        **(model_settings.extra_body or {}),
+        "extra_body": {
+            **(model_settings.extra_body or {}).get("extra_body", {}),
+            "thinking": {"type": "disabled"},
+        },
     }
     updated_args = list(args)
     updated_args[model_settings_index] = replace(
-        model_settings, extra_body=extra_body, extra_args=extra_args
+        model_settings, extra_body=extra_body
     )
     return tuple(updated_args), kwargs
 
@@ -219,8 +215,7 @@ def opencode_go_completion(messages: list[dict[str, str]], model: str) -> Any:
         try:
             extra_kwargs = {}
             if style == "openai" and _disable_opencode_go_thinking():
-                extra_kwargs["thinking"] = {"type": "disabled"}
-                extra_kwargs["allowed_openai_params"] = ["thinking"]
+                extra_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
 
             return litellm.completion(
                 model=_opencode_go_model_name(model, style),
