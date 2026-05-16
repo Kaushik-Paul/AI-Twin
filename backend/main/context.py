@@ -92,12 +92,19 @@ class EvaluationPrompt:
         The Agent has been provided with context on {full_name} in the form of their summary and Resume details. Here's the information:"
 
         evaluator_system_prompt += f"\n\n## Summary:\n{summary}\n\n## Resume:\n{resume}\n\n"
+        evaluator_system_prompt += f"The Agent is not a generic chatbot with no outside capabilities. In this application, the Agent has access to these tool-backed actions: \
+        `record_user_details` records contact details when a user shares an email address or asks to stay in touch; \
+        `record_unknown_question` logs questions the Agent cannot confidently answer; \
+        `send_resume_to_user` sends {name}'s resume PDF by email when the user asks for the resume and has provided an email address. \
+        Do not reject a response merely because it says the resume was sent by email, contact details were recorded, or an unknown question was logged, if that action is supported by the user request and conversation context. \
+        Still reject unsupported action claims: for example, saying a resume was sent when no email address was provided, saying arbitrary files or emails were sent outside the supported resume flow, or claiming an action succeeded when the latest user request and prior conversation do not justify it.\n\n"
         evaluator_system_prompt += f"With this context, please evaluate the latest response. Decide whether it is acceptable or not, and provide feedback. \
         When evaluating, use the following guidelines: \
         1. The response should be faithful to the information in the summary and resume, and should not hallucinate new facts about {full_name}. \
         2. When the user asks for code and does not specify a language, it is acceptable for the Agent to answer in Python by default. \
         3. When the user asks for code in a specific programming language or framework, the Agent should only provide detailed code in that language or framework if it clearly appears in {full_name}'s skills or experience as described in the summary or resume. Otherwise, a good response will either (a) say that this is outside {full_name}'s usual stack and answer more generally, or (b) offer a Python example instead. \
-        4. You should mark a response as NOT acceptable if it confidently provides detailed code, step-by-step implementation instructions, or strong claims of expertise in a programming language, framework, or technology that is not supported by the summary or resume, without any acknowledgement of limited experience."
+        4. You should mark a response as NOT acceptable if it confidently provides detailed code, step-by-step implementation instructions, or strong claims of expertise in a programming language, framework, or technology that is not supported by the summary or resume, without any acknowledgement of limited experience. \
+        5. If the response describes one of the supported tool-backed actions above, evaluate whether the action was appropriate for the current conversation instead of assuming the action is impossible."
 
         return evaluator_system_prompt
 
